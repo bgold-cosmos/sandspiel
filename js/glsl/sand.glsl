@@ -67,7 +67,7 @@ void main() {
     hue = 0.9;
     saturation = 0.3;
   } else if (type == 6) { // fire
-  
+
     hue = (data.g * 0.1);
     saturation = 0.7;
 
@@ -94,7 +94,8 @@ void main() {
     hue = 0.4;
     saturation = 0.4;
   } else if (type == 12) { // acid
-    hue = 0.18;
+    //hue = 0.18;
+    hue = 0.5;
     saturation = 0.9;
     lightness = 0.8 + data.g * 0.2 + noise * 0.05;
   } else if (type == 13) { // stone
@@ -106,9 +107,16 @@ void main() {
     saturation = 0.4;
     lightness = 0.8;
   } else if (type == 15) { // mite
-    hue = 0.8;
-    saturation = 0.9;
-    lightness = 0.8;
+    //hue = 0.8;
+    //saturation = 0.9;
+    //lightness = 0.8;
+    hue = 0.0;
+    saturation = 1.0;
+    lightness = 0.9;
+  } else if (type == 20) { // anti-Mite
+    hue = 0.33;
+    saturation = 1.0;
+    lightness = 1.0;
   } else if (type == 16) { // oil
     hue = (data.g * 5.0) + t * .008;
 

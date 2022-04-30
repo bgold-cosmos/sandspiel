@@ -382,6 +382,8 @@ impl Universe {
 
             Species::Sand => 30,
             Species::Mite => 30,
+            Species::AntiMite => 30,
+
             Species::Rocket => 30,
 
             Species::Dust => 10,
@@ -420,6 +422,7 @@ impl Universe {
                     || cell.species == Species::Lava
                     || cell.species == Species::Acid
                     || cell.species == Species::Mite
+                    || cell.species == Species::AntiMite
                     || cell.species == Species::Dust
                     || cell.species == Species::Oil
                     || cell.species == Species::Rocket)

@@ -34,6 +34,7 @@ pub enum Species {
     Dust = 14,
     Oil = 16,
     Rocket = 17,
+    AntiMite = 20,
 }
 
 impl Species {
@@ -58,6 +59,7 @@ impl Species {
             Species::Plant => update_plant(cell, api),
             Species::Acid => update_acid(cell, api),
             Species::Mite => update_mite(cell, api),
+            Species::AntiMite => update_antimite(cell, api),
             Species::Oil => update_oil(cell, api),
             Species::Fungus => update_fungus(cell, api),
             Species::Seed => update_seed(cell, api),
@@ -1067,6 +1069,7 @@ pub fn update_fungus(cell: Cell, mut api: SandApi) {
         && nbr_species != Species::Fungus
         && nbr_species != Species::Fire
         && nbr_species != Species::Ice
+        && nbr_species != Species::AntiMite
     {
         let (dx, dy) = api.rand_vec();
 
@@ -1278,6 +1281,99 @@ pub fn update_mite(cell: Cell, mut api: SandApi) {
         if api.get(-1, 0).species == Species::Mite
             && api.get(1, 0).species == Species::Mite
             && api.get(0, -1).species == Species::Mite
+        {
+            api.set(0, 0, EMPTY_CELL);
+        } else {
+            if api.get(0, 1).species == Species::Ice {
+                if api.get(dx, 0).species == Species::Empty {
+                    api.set(0, 0, EMPTY_CELL);
+                    api.set(dx, 0, mite);
+                }
+            } else {
+                api.set(0, 0, mite);
+            }
+        }
+    }
+}
+
+pub fn update_antimite(cell: Cell, mut api: SandApi) {
+    let mut i = api.rand_int(100);
+    let mut dx = 0;
+    if cell.ra < 20 {
+        dx = (cell.ra as i32) - 1;
+    }
+    let mut dy = 1;
+    let mut mite = cell.clone();
+
+    if cell.rb > 10 {
+        // /
+        mite.rb = mite.rb.saturating_sub(1);
+        dy = -1;
+    } else if cell.rb > 1 {
+        // \
+        mite.rb = mite.rb.saturating_sub(1);
+    } else {
+        // |
+        dx = 0;
+    }
+    let nbr = api.get(dx, dy);
+
+    let sx = (i % 3) - 1;
+    i = api.rand_int(1000);
+    let sy = (i % 3) - 1;
+    let sample = api.get(sx, sy).species;
+    if sample == Species::Fire
+        || sample == Species::Lava
+        || sample == Species::Water
+        || sample == Species::Oil
+    {
+        api.set(0, 0, EMPTY_CELL);
+        return;
+    }
+    if (sample == Species::Seed) && i > 800 {
+        api.set(0, 0, EMPTY_CELL);
+        api.set(sx, sy, cell);
+        return;
+    }
+    if (sample == Species::Fungus) && i > 300 {
+        api.set(0,0, EMPTY_CELL);
+        api.set(sx, sy, cell);
+        return;
+    }
+    if sample == Species::Dust {
+        api.set(sx, sy, if i > 800 { cell } else { EMPTY_CELL });
+    }
+    if sample == Species::Mite {
+        api.set(sx, sy, EMPTY_CELL);
+        api.set(0,0, Cell {species: Species::Fire,
+                           ra: (150 + (cell.ra / 10)) as u8,
+                           rb: 0,
+                           clock: 0,
+                       });
+
+        api.set_fluid(Wind {dx: 0, dy: 0, pressure: 80, density: 50});
+        return;
+    }
+
+    if nbr.species == Species::Empty {
+        api.set(0, 0, EMPTY_CELL);
+        api.set(dx, dy, mite);
+    } else if dy == 1 && i > 800 {
+        i = api.rand_int(100);
+        let mut ndx = (i % 3) - 1;
+        if i < 6 {
+            //switch direction
+            ndx = dx;
+        }
+
+        mite.ra = (1 + ndx) as u8;
+        mite.rb = 10 + (i % 10) as u8; //hop height
+
+        api.set(0, 0, mite);
+    } else {
+        if api.get(-1, 0).species == Species::AntiMite
+            && api.get(1, 0).species == Species::AntiMite
+            && api.get(0, -1).species == Species::AntiMite
         {
             api.set(0, 0, EMPTY_CELL);
         } else {
