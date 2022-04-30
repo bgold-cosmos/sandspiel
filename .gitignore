@@ -12,3 +12,6 @@ crate/target
 crate/wasm-pack.log
 crate/Cargo.lock
 .firebase
+package-lock.json
+package.json
+yarn.lock
