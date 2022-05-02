@@ -43,11 +43,11 @@ void main() {
       lightness = 1.01;
       a = 1.0;
     }
-  } else if (type == 1) {
+  } else if (type == 1) { // wall
     hue = 0.1;
     saturation = 0.1;
     lightness = 0.4;
-  } else if (type == 2) {
+  } else if (type == 2) { // sand
     hue = 0.1;
     saturation = 0.5;
     lightness += 0.3;
@@ -58,7 +58,17 @@ void main() {
     if(polarity == 0){
       lightness += 0.01;
     }
-
+  } else if (type == 21) { // brine
+    hue = 0.57;
+    lightness = 0.7 + data.g * 0.25 + noise * 0.1;
+    int polarity = int( mod(data.g * 255. ,2.) + 0.1);
+    if(polarity == 0){
+      lightness += 0.01;
+    }
+  } else if (type == 22) { // salt
+    hue = 0.1;
+    saturation = 0.1;
+    lightness += 0.4;
   } else if (type == 4) { // gas
     hue = 0.0;
     lightness += 0.4;
@@ -126,6 +136,10 @@ void main() {
     hue = 0.0;
     saturation = 0.4 + data.b;
     lightness = 0.9;
+  } else if (type == 23) { // metal
+      hue = 0.0;
+      saturation = 0.0 + data.b;
+      lightness = 0.6;
   } else if (type == 18) { // fungus
     hue = (data.g * 0.15) - 0.1;
     saturation = (data.g * 0.8) - 0.05;

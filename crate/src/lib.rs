@@ -364,6 +364,8 @@ impl Universe {
             Species::Wall => 500,
             Species::Cloner => 500,
 
+            Species::Metal => 250,
+
             Species::Stone => 70,
             Species::Wood => 70,
 
@@ -385,6 +387,8 @@ impl Universe {
             Species::AntiMite => 30,
 
             Species::Rocket => 30,
+
+            Species::Salt => 20,
 
             Species::Dust => 10,
             Species::Fire => 5,
@@ -419,11 +423,13 @@ impl Universe {
                 && api.get(dx, -2).species == Species::Empty
                 && (cell.species == Species::Sand
                     || cell.species == Species::Water
+                    || cell.species == Species::Brine
                     || cell.species == Species::Lava
                     || cell.species == Species::Acid
                     || cell.species == Species::Mite
                     || cell.species == Species::AntiMite
                     || cell.species == Species::Dust
+                    || cell.species == Species::Salt
                     || cell.species == Species::Oil
                     || cell.species == Species::Rocket)
             {

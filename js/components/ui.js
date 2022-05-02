@@ -22,13 +22,13 @@ const ElementButton = (name, selectedElement, setElement) => {
 
   let background = "inherit";
   if (elementID == 14) {
-    background = `linear-gradient(45deg, 
-    rgba(202, 121, 125, 0.25), 
-    rgba(169, 120, 200, 0.25), 
-    rgba(117, 118, 195, 0.25), 
-    rgba(117, 196, 193, 0.25), 
-    rgba(122, 203, 168, 0.25), 
-    rgba(185, 195, 117, 0.25), 
+    background = `linear-gradient(45deg,
+    rgba(202, 121, 125, 0.25),
+    rgba(169, 120, 200, 0.25),
+    rgba(117, 118, 195, 0.25),
+    rgba(117, 196, 193, 0.25),
+    rgba(122, 203, 168, 0.25),
+    rgba(185, 195, 117, 0.25),
     rgba(204, 186, 122, 0.25))`;
     if (selected) {
       background = background.replace(/0.25/g, "1.0");
@@ -455,7 +455,7 @@ class Index extends React.Component {
             <img src={this.state.data.dataURL} className="submissionImg" />
             <SignInButton>
               <div style={{ display: "flex" }}>
-                <input 
+                <input
                   maxlength="200"
                   placeholder="title"
                   onChange={(e) => this.setState({ title: e.target.value })}

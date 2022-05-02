@@ -4,7 +4,7 @@ use SandApi;
 use Wind;
 use EMPTY_CELL;
 
-// use std::cmp;
+use std::cmp;
 use std::mem;
 use wasm_bindgen::prelude::*;
 // use web_sys::console;
@@ -35,6 +35,9 @@ pub enum Species {
     Oil = 16,
     Rocket = 17,
     AntiMite = 20,
+    Brine = 21,
+    Salt = 22,
+    Metal = 23,
 }
 
 impl Species {
@@ -63,9 +66,52 @@ impl Species {
             Species::Oil => update_oil(cell, api),
             Species::Fungus => update_fungus(cell, api),
             Species::Seed => update_seed(cell, api),
+            Species::Brine => update_brine(cell, api),
+            Species::Salt => update_salt(cell, api),
+            Species::Metal => update_metal(cell, api),
             // Species::X => update_x(cell, api),
         }
     }
+}
+
+pub fn is_fluid(cell: Cell) -> bool {
+    if cell.species == Species::Water
+        || cell.species == Species::Gas
+        || cell.species == Species::Oil
+        || cell.species == Species::Brine
+        || cell.species == Species::Acid
+    { true } else { false }
+}
+
+pub fn update_metal(cell: Cell, mut api: SandApi) { // heating doesn't quite work yet
+    let rb = cell.rb;
+    let mut delta = 0;
+    let (dx, dy) = api.rand_vec_8();
+    let nbr = api.get(dx, dy);
+    let p = api.rand_int(100);
+
+    if nbr.species == Species::Metal && p < 50 {
+        if nbr.rb > rb {
+            api.set(dx, dy, Cell {
+                species: Species::Metal, ra: nbr.ra, rb:nbr.rb-1, clock:0});
+            api.set(0, 0, Cell {
+                species: Species::Metal, ra: cell.ra, rb:rb+1, clock:0});
+        } else if nbr.rb < rb {
+            api.set(dx, dy, Cell {
+                species: Species::Metal, ra: nbr.ra, rb:nbr.rb+1, clock:0});
+            api.set(0, 0, Cell {
+                species: Species::Metal, ra: cell.ra, rb:rb-1, clock:0});
+        }
+    } else if nbr.species == Species::Fire
+                || nbr.species == Species::Lava
+                || (nbr.species == Species::Oil && nbr.rb > 10) {
+        api.set(0, 0, Cell {
+            species: Species::Metal, ra: cell.ra, rb: cmp::min(rb + 1,250), clock: 0});
+    }
+
+    //if rb > 1.0 && p < 0 {
+    //    delta = delta - if rb > 127.0 {2.0} else {1.0};
+    //}
 }
 
 pub fn update_sand(cell: Cell, mut api: SandApi) {
@@ -78,16 +124,42 @@ pub fn update_sand(cell: Cell, mut api: SandApi) {
     } else if api.get(dx, 1).species == Species::Empty {
         api.set(0, 0, EMPTY_CELL);
         api.set(dx, 1, cell);
-    } else if nbr.species == Species::Water
-        || nbr.species == Species::Gas
-        || nbr.species == Species::Oil
-        || nbr.species == Species::Acid
-    {
+    } else if is_fluid(nbr) {
         api.set(0, 0, nbr);
         api.set(0, 1, cell);
     } else {
         api.set(0, 0, cell);
     }
+}
+
+pub fn update_salt(cell: Cell, mut api: SandApi) {
+    let dx = api.rand_dir_2();
+
+    let nbr = api.get(0, 1);
+    if nbr.species == Species::Empty {
+        api.set(0, 0, EMPTY_CELL);
+        api.set(0, 1, cell);
+    } else if api.get(dx, 1).species == Species::Empty {
+        api.set(0, 0, EMPTY_CELL);
+        api.set(dx, 1, cell);
+    } else if is_fluid(nbr) {
+        api.set(0, 0, nbr);
+        api.set(0, 1, cell);
+    } else {
+        api.set(0, 0, cell);
+    }
+    let (dx,dy) = api.rand_vec_8();
+    let nbr = api.get(dx,dy);
+    if (nbr.species == Species::Plant
+          || nbr.species == Species::Fungus
+          || nbr.species == Species::Seed) && api.rand_int(100) < 2 {
+        api.set(dx, dy, Cell::new(Species::Dust));
+        api.set(0, 0, EMPTY_CELL)
+    } else if nbr.species == Species::Water && api.rand_int(100) < 10 {
+        api.set(0, 0, EMPTY_CELL);
+        api.set(dx, dy, Cell::new(Species::Brine));
+    }
+
 }
 
 pub fn update_dust(cell: Cell, mut api: SandApi) {
@@ -118,7 +190,7 @@ pub fn update_dust(cell: Cell, mut api: SandApi) {
     if nbr.species == Species::Empty {
         api.set(0, 0, EMPTY_CELL);
         api.set(0, 1, cell);
-    } else if nbr.species == Species::Water {
+    } else if nbr.species == Species::Water || nbr.species == Species::Brine {
         api.set(0, 0, nbr);
         api.set(0, 1, cell);
     } else if api.get(dx, 1).species == Species::Empty {
@@ -154,11 +226,7 @@ pub fn update_stone(cell: Cell, mut api: SandApi) {
     if nbr_species == Species::Empty {
         api.set(0, 0, EMPTY_CELL);
         api.set(0, 1, cell);
-    } else if nbr_species == Species::Water
-        || nbr_species == Species::Gas
-        || nbr_species == Species::Oil
-        || nbr_species == Species::Acid
-    {
+    } else if is_fluid(nbr) {
         api.set(0, 0, nbr);
         api.set(0, 1, cell);
     } else {
@@ -283,6 +351,100 @@ pub fn update_water(cell: Cell, mut api: SandApi) {
     // }
 }
 
+pub fn update_brine(cell: Cell, mut api: SandApi) {
+    let mut dx = api.rand_dir();
+    let below = api.get(0, 1);
+    let dx1 = api.get(dx, 1);
+    // let mut dx0 = api.get(dx, 0);
+    //fall down
+    if below.species == Species::Empty || below.species == Species::Oil || below.species == Species::Water {
+        api.set(0, 0, below);
+        let mut ra = cell.ra;
+        if api.once_in(20) {
+            //randomize direction when falling sometimes
+            ra = 100 + api.rand_int(50) as u8;
+        }
+        api.set(0, 1, Cell { ra, ..cell });
+
+        return;
+    } else if dx1.species == Species::Empty || dx1.species == Species::Oil || below.species == Species::Water{
+        //fall diagonally
+        api.set(0, 0, dx1);
+        api.set(dx, 1, cell);
+        return;
+    } else if api.get(-dx, 1).species == Species::Empty {
+        api.set(0, 0, EMPTY_CELL);
+        api.set(-dx, 1, cell);
+        return;
+    }
+    let left = cell.ra % 2 == 0;
+    dx = if left { 1 } else { -1 };
+    let dx0 = api.get(dx, 0);
+    let dxd = api.get(dx * 2, 0);
+
+    if dx0.species == Species::Empty && dxd.species == Species::Empty {
+        // scoot double
+        api.set(0, 0, dxd);
+        api.set(2 * dx, 0, Cell { rb: 6, ..cell });
+        let (dx, dy) = api.rand_vec_8();
+        let nbr = api.get(dx, dy);
+
+        // spread opinion
+        if nbr.species == Species::Brine {
+            if nbr.ra % 2 != cell.ra % 2 {
+                api.set(
+                    dx,
+                    dy,
+                    Cell {
+                        ra: cell.ra,
+                        ..cell
+                    },
+                )
+            }
+        }
+    } else if dx0.species == Species::Empty || dx0.species == Species::Oil || dx0.species == Species::Water {
+        api.set(0, 0, dx0);
+        api.set(dx, 0, Cell { rb: 3, ..cell });
+        let (dx, dy) = api.rand_vec_8();
+        let nbr = api.get(dx, dy);
+        if nbr.species == Species::Brine {
+            if nbr.ra % 2 != cell.ra % 2 {
+                api.set(
+                    dx,
+                    dy,
+                    Cell {
+                        ra: cell.ra,
+                        ..cell
+                    },
+                )
+            }
+        }
+    } else if cell.rb == 0 {
+        if api.get(-dx, 0).species == Species::Empty {
+            // bump
+            api.set(
+                0,
+                0,
+                Cell {
+                    ra: ((cell.ra as i32) + dx) as u8,
+                    ..cell
+                },
+            );
+        }
+    } else {
+        // become less certain (more bumpable)
+        api.set(
+            0,
+            0,
+            Cell {
+                rb: cell.rb - 1,
+                ..cell
+            },
+        );
+    }
+}
+
+
 pub fn update_oil(cell: Cell, mut api: SandApi) {
     let rb = cell.rb;
     let (dx, dy) = api.rand_vec();
@@ -314,7 +476,7 @@ pub fn update_oil(cell: Cell, mut api: SandApi) {
             pressure: 10,
             density: 180,
         });
-        if rb % 4 != 0 && nbr.species == Species::Empty && nbr.species != Species::Water {
+        if rb % 4 != 0 && nbr.species == Species::Empty && nbr.species != Species::Water && nbr.species != Species::Brine{
             let ra = 20 + api.rand_int(30) as u8;
             api.set(
                 dx,
@@ -327,7 +489,7 @@ pub fn update_oil(cell: Cell, mut api: SandApi) {
                 },
             );
         }
-        if nbr.species == Species::Water {
+        if nbr.species == Species::Water || nbr.species == Species::Brine{
             new_cell = Cell {
                 species: Species::Oil,
                 ra: 50,
@@ -529,11 +691,7 @@ pub fn update_rocket(cell: Cell, mut api: SandApi) {
         } else if api.get(dx, 1).species == Species::Empty {
             api.set(0, 0, EMPTY_CELL);
             api.set(dx, 1, cell);
-        } else if nbr.species == Species::Water
-            || nbr.species == Species::Gas
-            || nbr.species == Species::Oil
-            || nbr.species == Species::Acid
-        {
+        } else if is_fluid(nbr) {
             api.set(0, 0, nbr);
             api.set(0, 1, cell);
         } else {
@@ -621,7 +779,7 @@ pub fn update_fire(cell: Cell, mut api: SandApi) {
             density: 40,
         });
     }
-    if ra < 5 || api.get(dx, dy).species == Species::Water {
+    if ra < 5 || api.get(dx, dy).species == Species::Water || api.get(dx,dy).species == Species::Brine {
         api.set(0, 0, EMPTY_CELL);
     } else if api.get(dx, dy).species == Species::Empty {
         api.set(0, 0, EMPTY_CELL);
@@ -653,7 +811,7 @@ pub fn update_lava(cell: Cell, mut api: SandApi) {
         );
     }
     let sample = api.get(dx, dy);
-    if sample.species == Species::Water {
+    if sample.species == Species::Water || sample.species == Species::Brine {
         api.set(
             0,
             0,
@@ -723,7 +881,7 @@ pub fn update_wood(cell: Cell, mut api: SandApi) {
                 },
             )
         }
-        if nbr_species == Species::Water {
+        if nbr_species == Species::Water || nbr_species == Species::Brine {
             api.set(
                 0,
                 0,
@@ -787,7 +945,7 @@ pub fn update_ice(cell: Cell, mut api: SandApi) {
                 clock: 0,
             },
         );
-    } else if nbr_species == Species::Water && i < 7 {
+    } else if (nbr_species == Species::Water || nbr_species == Species::Brine) && i < 7 {
         api.set(
             dx,
             dy,
@@ -798,6 +956,9 @@ pub fn update_ice(cell: Cell, mut api: SandApi) {
                 clock: 0,
             },
         );
+        if nbr_species == Species::Brine && api.rand_int(100) < 30 {
+            api.set(0, 0, Cell::new(Species::Salt));
+        }
     }
 }
 
@@ -884,7 +1045,7 @@ pub fn update_plant(cell: Cell, mut api: SandApi) {
                 },
             );
         }
-        if nbr_species == Species::Water {
+        if nbr_species == Species::Water || nbr_species == Species::Brine {
             api.set(
                 0,
                 0,
@@ -971,11 +1132,7 @@ pub fn update_seed(cell: Cell, mut api: SandApi) {
         } else if api.get(dxf, 1).species == Species::Empty {
             api.set(0, 0, EMPTY_CELL);
             api.set(dxf, 1, cell);
-        } else if nbr.species == Species::Water
-            || nbr.species == Species::Gas
-            || nbr.species == Species::Oil
-            || nbr.species == Species::Acid
-        {
+        } else if is_fluid(nbr) {
             api.set(0, 0, nbr);
             api.set(0, 1, cell);
         } else {
@@ -1132,7 +1289,7 @@ pub fn update_fungus(cell: Cell, mut api: SandApi) {
                 },
             )
         }
-        if nbr_species == Species::Water {
+        if nbr_species == Species::Water || nbr_species == Species::Brine {
             api.set(
                 0,
                 0,
@@ -1247,6 +1404,7 @@ pub fn update_mite(cell: Cell, mut api: SandApi) {
     if sample == Species::Fire
         || sample == Species::Lava
         || sample == Species::Water
+        || sample == Species::Brine
         || sample == Species::Oil
     {
         api.set(0, 0, EMPTY_CELL);
@@ -1325,6 +1483,7 @@ pub fn update_antimite(cell: Cell, mut api: SandApi) {
     if sample == Species::Fire
         || sample == Species::Lava
         || sample == Species::Water
+        || sample == Species::Brine
         || sample == Species::Oil
     {
         api.set(0, 0, EMPTY_CELL);
