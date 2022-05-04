@@ -1,6 +1,19 @@
 <meta charset="utf-8"/>
 
-# sandspiel (FORK)
+# a custom fork of sandspiel
+
+originally developed by [Max Bittker](https://maxbittker.com/)
+
+customized by Ben Gold
+
+My kid likes to play this game, so I thought I'd have some fun changing a few things:
+
+  * Anti-Mites that explode on contact with Mites!
+  * Salt and Brine (salt water)!
+  * Metal that can heat up and set things on fire when hot!
+  * Slightly less agressive fungus!
+
+## original notes below
 
 "Imagine the cool phenomenon when the wind blows the falling leaves. This game simulates the phenomenon with powder (dots)!" -DAN-BALL
 
