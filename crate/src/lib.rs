@@ -364,7 +364,7 @@ impl Universe {
             Species::Wall => 500,
             Species::Cloner => 500,
 
-            Species::Metal => 250,
+            Species::Metal => 90,
 
             Species::Stone => 70,
             Species::Wood => 70,

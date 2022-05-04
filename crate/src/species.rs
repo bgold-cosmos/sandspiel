@@ -85,12 +85,11 @@ pub fn is_fluid(cell: Cell) -> bool {
 
 pub fn update_metal(cell: Cell, mut api: SandApi) { // heating doesn't quite work yet
     let rb = cell.rb;
-    let mut delta = 0;
     let (dx, dy) = api.rand_vec_8();
     let nbr = api.get(dx, dy);
-    let p = api.rand_int(100);
+    let mut cooling = 0;
 
-    if nbr.species == Species::Metal && p < 50 {
+    if nbr.species == Species::Metal && api.rand_int(100) < 50 {
         if nbr.rb > rb {
             api.set(dx, dy, Cell {
                 species: Species::Metal, ra: nbr.ra, rb:nbr.rb-1, clock:0});
@@ -106,12 +105,24 @@ pub fn update_metal(cell: Cell, mut api: SandApi) { // heating doesn't quite wor
                 || nbr.species == Species::Lava
                 || (nbr.species == Species::Oil && nbr.rb > 10) {
         api.set(0, 0, Cell {
-            species: Species::Metal, ra: cell.ra, rb: cmp::min(rb + 1,250), clock: 0});
+            species: Species::Metal, ra: cell.ra, rb: cmp::min(rb + 1, 250), clock: 0});
     }
 
-    //if rb > 1.0 && p < 0 {
-    //    delta = delta - if rb > 127.0 {2.0} else {1.0};
-    //}
+    cooling = 2;
+    if nbr.species == Species::Empty || nbr.species == Species::Gas {
+        cooling = 1;
+    } else if nbr.species == Species::Oil {
+        cooling = 3;
+    } else if nbr.species == Species::Water || nbr.species == Species::Brine {
+        cooling = 6;
+    } else if nbr.species == Species::Ice {
+        cooling = 9;
+    }
+
+    if cooling > 0 && rb > 1 && api.rand_int(100) < 12 {
+        api.set(0, 0, Cell {
+            species: Species::Metal, ra: cell.ra, rb: rb-cmp::min(cooling,rb), clock: 0});
+    }
 }
 
 pub fn update_sand(cell: Cell, mut api: SandApi) {
@@ -454,6 +465,7 @@ pub fn update_oil(cell: Cell, mut api: SandApi) {
     if rb == 0 && nbr.species == Species::Fire
         || nbr.species == Species::Lava
         || (nbr.species == Species::Oil && nbr.rb > 1 && nbr.rb < 20)
+        || (nbr.species == Species::Metal && nbr.rb > 100)
     {
         new_cell = Cell {
             species: Species::Oil,
@@ -933,8 +945,10 @@ pub fn update_ice(cell: Cell, mut api: SandApi) {
         return;
     }
 
-    let nbr_species = api.get(dx, dy).species;
-    if nbr_species == Species::Fire || nbr_species == Species::Lava {
+    let nbr = api.get(dx,dy);
+    let nbr_species = nbr.species;
+    if nbr_species == Species::Fire || nbr_species == Species::Lava
+            || (nbr_species == Species::Metal && nbr.rb > 50){
         api.set(
             0,
             0,
@@ -968,8 +982,10 @@ pub fn update_plant(cell: Cell, mut api: SandApi) {
     let mut i = api.rand_int(100);
     let (dx, dy) = api.rand_vec();
 
-    let nbr_species = api.get(dx, dy).species;
-    if rb == 0 && nbr_species == Species::Fire || nbr_species == Species::Lava {
+    let nbr = api.get(dx,dy);
+    let nbr_species = nbr.species;
+    if rb == 0 && (nbr_species == Species::Fire || nbr_species == Species::Lava
+            || (nbr_species == Species::Metal && nbr.rb > 100)) {
         api.set(
             0,
             0,
@@ -1096,8 +1112,10 @@ pub fn update_seed(cell: Cell, mut api: SandApi) {
 
     let (dx, dy) = api.rand_vec();
 
-    let nbr_species = api.get(dx, dy).species;
-    if nbr_species == Species::Fire || nbr_species == Species::Lava {
+    let nbr = api.get(dx,dy);
+    let nbr_species = nbr.species;
+    if nbr_species == Species::Fire || nbr_species == Species::Lava
+            || (nbr_species == Species::Metal && nbr.rb > 100) {
         api.set(
             0,
             0,
@@ -1207,8 +1225,10 @@ pub fn update_fungus(cell: Cell, mut api: SandApi) {
 
     let (dx, dy) = api.rand_vec();
 
-    let nbr_species = api.get(dx, dy).species;
-    if rb == 0 && nbr_species == Species::Fire || nbr_species == Species::Lava {
+    let nbr = api.get(dx,dy);
+    let nbr_species = nbr.species;
+    if rb == 0 && (nbr_species == Species::Fire || nbr_species == Species::Lava
+            || (nbr_species == Species::Metal && nbr.rb > 100)) {
         api.set(
             0,
             0,
@@ -1401,11 +1421,13 @@ pub fn update_mite(cell: Cell, mut api: SandApi) {
     i = api.rand_int(1000);
     let sy = (i % 3) - 1;
     let sample = api.get(sx, sy).species;
+    let samprb = api.get(sx, sy).rb;
     if sample == Species::Fire
         || sample == Species::Lava
         || sample == Species::Water
         || sample == Species::Brine
         || sample == Species::Oil
+        || (sample == Species::Metal && samprb > 100)
     {
         api.set(0, 0, EMPTY_CELL);
         return;
@@ -1480,11 +1502,13 @@ pub fn update_antimite(cell: Cell, mut api: SandApi) {
     i = api.rand_int(1000);
     let sy = (i % 3) - 1;
     let sample = api.get(sx, sy).species;
+    let samprb = api.get(sx, sy).rb;
     if sample == Species::Fire
         || sample == Species::Lava
         || sample == Species::Water
         || sample == Species::Brine
         || sample == Species::Oil
+        || (sample == Species::Metal && samprb > 100)
     {
         api.set(0, 0, EMPTY_CELL);
         return;
