@@ -108,6 +108,10 @@ void main() {
     hue = 0.5;
     saturation = 0.9;
     lightness = 0.8 + data.g * 0.2 + noise * 0.05;
+  } else if (type == 24) { // base
+    hue = 0.70;
+    saturation = 0.17;
+    lightness = 0.9 + data.g * 0.1 + noise * 0.05;
   } else if (type == 13) { // stone
     hue = -0.4 + (data.g * 0.5);
     saturation = 0.1;

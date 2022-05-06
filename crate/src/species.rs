@@ -38,6 +38,7 @@ pub enum Species {
     Brine = 21,
     Salt = 22,
     Metal = 23,
+    Base = 24,
 }
 
 impl Species {
@@ -69,6 +70,7 @@ impl Species {
             Species::Brine => update_brine(cell, api),
             Species::Salt => update_salt(cell, api),
             Species::Metal => update_metal(cell, api),
+            Species::Base => update_base(cell, api),
             // Species::X => update_x(cell, api),
         }
     }
@@ -80,14 +82,22 @@ pub fn is_fluid(cell: Cell) -> bool {
         || cell.species == Species::Oil
         || cell.species == Species::Brine
         || cell.species == Species::Acid
+        || cell.species == Species::Base
     { true } else { false }
+}
+
+pub fn is_etchable(cell:Cell) -> bool {
+    let sp = cell.species;
+    sp != Species::Wall
+        && sp != Species::Acid
+        && sp != Species::Base
 }
 
 pub fn update_metal(cell: Cell, mut api: SandApi) { // heating doesn't quite work yet
     let rb = cell.rb;
     let (dx, dy) = api.rand_vec_8();
     let nbr = api.get(dx, dy);
-    let mut cooling = 0;
+    let mut cooling = 2;
 
     if nbr.species == Species::Metal && api.rand_int(100) < 50 {
         if nbr.rb > rb {
@@ -104,11 +114,11 @@ pub fn update_metal(cell: Cell, mut api: SandApi) { // heating doesn't quite wor
     } else if nbr.species == Species::Fire
                 || nbr.species == Species::Lava
                 || (nbr.species == Species::Oil && nbr.rb > 10) {
+        cooling = 0;
         api.set(0, 0, Cell {
             species: Species::Metal, ra: cell.ra, rb: cmp::min(rb + 1, 250), clock: 0});
     }
 
-    cooling = 2;
     if nbr.species == Species::Empty || nbr.species == Species::Gas {
         cooling = 1;
     } else if nbr.species == Species::Oil {
@@ -119,7 +129,7 @@ pub fn update_metal(cell: Cell, mut api: SandApi) { // heating doesn't quite wor
         cooling = 9;
     }
 
-    if cooling > 0 && rb > 1 && api.rand_int(100) < 12 {
+    if cooling > 0 && nbr.species != Species::Metal && rb > 1 && api.rand_int(100) < 8 {
         api.set(0, 0, Cell {
             species: Species::Metal, ra: cell.ra, rb: rb-cmp::min(cooling,rb), clock: 0});
     }
@@ -1371,22 +1381,54 @@ pub fn update_acid(cell: Cell, mut api: SandApi) {
         api.set(0, 0, EMPTY_CELL);
         api.set(-dx, 0, cell);
     } else {
-        if api.get(0, 1).species != Species::Wall && api.get(0, 1).species != Species::Acid {
+        if is_etchable(api.get(0, 1)) {
             api.set(0, 0, EMPTY_CELL);
             api.set(0, 1, degraded);
-        } else if api.get(dx, 0).species != Species::Wall && api.get(dx, 0).species != Species::Acid
-        {
+        } else if is_etchable(api.get(dx, 0)) {
             api.set(0, 0, EMPTY_CELL);
             api.set(dx, 0, degraded);
-        } else if api.get(-dx, 0).species != Species::Wall
-            && api.get(-dx, 0).species != Species::Acid
-        {
+        } else if is_etchable(api.get(-dx, 0)) {
             api.set(0, 0, EMPTY_CELL);
             api.set(-dx, 0, degraded);
-        } else if api.get(0, -1).species != Species::Wall
-            && api.get(0, -1).species != Species::Acid
-            && api.get(0, -1).species != Species::Empty
-        {
+        } else if is_etchable(api.get(0, -1)) && api.get(0, -1).species != Species::Empty {
+            api.set(0, 0, EMPTY_CELL);
+            api.set(0, -1, degraded);
+        } else {
+            api.set(0, 0, cell);
+        }
+    }
+}
+
+pub fn update_base(cell: Cell, mut api: SandApi) {
+    let dx = api.rand_dir();
+
+    let ra = cell.ra;
+    let mut degraded = cell.clone();
+    degraded.ra = ra - 60;
+    // i = api.rand_int(100);
+    if degraded.ra < 80 {
+        degraded = EMPTY_CELL;
+    }
+    if api.get(0, 1).species == Species::Empty {
+        api.set(0, 0, EMPTY_CELL);
+        api.set(0, 1, cell);
+    } else if api.get(dx, 0).species == Species::Empty {
+        api.set(0, 0, EMPTY_CELL);
+        api.set(dx, 0, cell);
+    } else if api.get(-dx, 0).species == Species::Empty {
+        api.set(0, 0, EMPTY_CELL);
+        api.set(-dx, 0, cell);
+    } else {
+        if is_etchable(api.get(0, 1)) {
+            api.set(0, 0, EMPTY_CELL);
+            api.set(0, 1, degraded);
+        } else if is_etchable(api.get(dx, 0)) {
+            api.set(0, 0, EMPTY_CELL);
+            api.set(dx, 0, degraded);
+        } else if is_etchable(api.get(-dx, 0)) {
+            api.set(0, 0, EMPTY_CELL);
+            api.set(-dx, 0, degraded);
+        } else if is_etchable(api.get(0, -1)) && api.get(0, -1).species != Species::Empty {
             api.set(0, 0, EMPTY_CELL);
             api.set(0, -1, degraded);
         } else {

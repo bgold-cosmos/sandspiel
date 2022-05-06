@@ -364,7 +364,7 @@ impl Universe {
             Species::Wall => 500,
             Species::Cloner => 500,
 
-            Species::Metal => 90,
+            Species::Metal => 110,
 
             Species::Stone => 70,
             Species::Wood => 70,
@@ -426,6 +426,7 @@ impl Universe {
                     || cell.species == Species::Brine
                     || cell.species == Species::Lava
                     || cell.species == Species::Acid
+                    || cell.species == Species::Base
                     || cell.species == Species::Mite
                     || cell.species == Species::AntiMite
                     || cell.species == Species::Dust
