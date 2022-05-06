@@ -1,5 +1,5 @@
 {
-  "name": "sandtable",
+  "name": "sandspiel-fork",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -18,7 +18,7 @@
     "rust",
     "webpack"
   ],
-  "author": "Max Bittker",
+  "author": "Ben Gold (original author Max Bittker)",
   "license": "(MIT OR Apache-2.0)",
   "devDependencies": {
     "@babel/core": "^7.7.7",
