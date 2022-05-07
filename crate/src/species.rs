@@ -1363,6 +1363,7 @@ pub fn update_fungus(cell: Cell, mut api: SandApi) {
 
 pub fn update_acid(cell: Cell, mut api: SandApi) {
     let dx = api.rand_dir();
+    let dy = api.rand_dir();
 
     let ra = cell.ra;
     let mut degraded = cell.clone();
@@ -1381,7 +1382,9 @@ pub fn update_acid(cell: Cell, mut api: SandApi) {
         api.set(0, 0, EMPTY_CELL);
         api.set(-dx, 0, cell);
     } else {
-        if is_etchable(api.get(0, 1)) {
+        if api.get(dx, dy).species == Species::Water {
+            api.set(0, 0, Cell {species: Species::Water, ra, rb: 0, clock: 0});
+        } else if is_etchable(api.get(0, 1)) {
             api.set(0, 0, EMPTY_CELL);
             api.set(0, 1, degraded);
         } else if is_etchable(api.get(dx, 0)) {
@@ -1393,6 +1396,9 @@ pub fn update_acid(cell: Cell, mut api: SandApi) {
         } else if is_etchable(api.get(0, -1)) && api.get(0, -1).species != Species::Empty {
             api.set(0, 0, EMPTY_CELL);
             api.set(0, -1, degraded);
+        } else if api.get(dx, dy).species == Species::Base {
+            api.set(0, 0, Cell {species: Species::Brine, ra, rb: 0, clock: 0});
+            api.set(dx, dy, Cell {species: Species::Water, ra, rb: 0, clock: 0});
         } else {
             api.set(0, 0, cell);
         }
@@ -1401,6 +1407,7 @@ pub fn update_acid(cell: Cell, mut api: SandApi) {
 
 pub fn update_base(cell: Cell, mut api: SandApi) {
     let dx = api.rand_dir();
+    let dy = api.rand_dir();
 
     let ra = cell.ra;
     let mut degraded = cell.clone();
@@ -1419,7 +1426,9 @@ pub fn update_base(cell: Cell, mut api: SandApi) {
         api.set(0, 0, EMPTY_CELL);
         api.set(-dx, 0, cell);
     } else {
-        if is_etchable(api.get(0, 1)) {
+        if api.get(dx, dy).species == Species::Water {
+            api.set(0, 0, Cell {species: Species::Water, ra, rb: 0, clock: 0});
+        } else if is_etchable(api.get(0, 1)) {
             api.set(0, 0, EMPTY_CELL);
             api.set(0, 1, degraded);
         } else if is_etchable(api.get(dx, 0)) {
@@ -1431,6 +1440,9 @@ pub fn update_base(cell: Cell, mut api: SandApi) {
         } else if is_etchable(api.get(0, -1)) && api.get(0, -1).species != Species::Empty {
             api.set(0, 0, EMPTY_CELL);
             api.set(0, -1, degraded);
+        } else if api.get(dx, dy).species == Species::Acid {
+            api.set(0, 0, Cell {species: Species::Brine, ra, rb: 0, clock: 0});
+            api.set(dx, dy, Cell {species: Species::Water, ra, rb: 0, clock: 0});
         } else {
             api.set(0, 0, cell);
         }

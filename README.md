@@ -11,7 +11,7 @@ My kid likes to play this game, so I thought I'd have some fun changing a few th
   * Anti-Mites that explode on contact with Mites!
   * Salt and Brine (salt water)!
   * Metal that can heat up and set things on fire when hot!
-  * Slightly less agressive fungus!
+  * Slightly less aggressive fungus!
 
 ## original notes below
 
