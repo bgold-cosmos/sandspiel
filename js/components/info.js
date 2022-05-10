@@ -5,7 +5,7 @@ const Info = () => {
     <div className="Info">
       <h1>Sandspiel </h1>
       <p>
-        Created by <a href="https://maxbittker.com">max bittker</a>
+        Created by <a href="https://maxbittker.com">max bittker (and modified by Ben Gold)</a>
       </p>
       <hr />
       <br />
@@ -50,6 +50,10 @@ const Info = () => {
       Sinks in water
       <h4>Water </h4>
       Puts out fire
+      <h4>Brine </h4>
+      Salty water kills plants
+      <h4>Salt </h4>
+      Like sand, but mixes with water to form brine
       <h4>Stone </h4>
       Forms arches, folds under pressure
       <h4>Ice </h4>
@@ -60,6 +64,8 @@ const Info = () => {
       Copies the first element it touches
       <h4>Mite </h4>
       Eats wood and plant, but loves dust! Slides on ice
+      <h4>Anti-Mite </h4>
+      Eats fungus, love dust, and annihilates on contact with mites
       <h4>Wood </h4>
       Sturdy, but biodegradable
       <h4>Plant </h4>
@@ -72,8 +78,12 @@ const Info = () => {
       Hot!
       <h4>Lava </h4>
       Flammable and heavy
+      <h4>Metal </h4>
+      Strong and sturdy, can heat up if next to lava or fire
       <h4>Acid </h4>
       Corrodes other elements
+      <h4>Base </h4>
+      Also corrodes things, neutralizes acid
       <h4>Dust </h4>
       Pretty, but dangerously explosive
       <h4>Oil </h4>

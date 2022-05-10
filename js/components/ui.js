@@ -366,7 +366,7 @@ class Index extends React.Component {
           )}
         </button>
 
-        {!window.location.pathname.includes("school") && (
+        {window.location.pathname.includes("share_enable") && (
           <>
             <button onClick={() => this.upload()}>Upload</button>
             <Link
@@ -430,12 +430,7 @@ class Index extends React.Component {
               this.setState({ selectedElement: id })
             )
           )}
-        <span className="promo">
-          *new*{" "}
-          <a href="https://orb.farm" target="_blank">
-            orb.farm
-          </a>
-        </span>
+          
         {this.state.currentSubmission && (
           <div className="submission-title">
             <button onClick={() => this.incScore()}>
