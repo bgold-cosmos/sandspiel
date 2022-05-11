@@ -5,7 +5,7 @@ const Info = () => {
     <div className="Info">
       <h1>Sandspiel </h1>
       <p>
-        Created by <a href="https://maxbittker.com">max bittke</a>
+        Created by <a href="https://maxbittker.com">max bittker</a>
         <br/> (and modified by Ben Gold with suggestions from Lenora Gold)
       </p>
       <p>
