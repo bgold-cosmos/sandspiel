@@ -4,11 +4,11 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/1.5f3eec08ca7d581fe268.js"
   },
   {
-    "revision": "22b5973e49e76db4f42d",
-    "url": "/2.365925aaa75c266fc137.js"
+    "revision": "2d94ac4887fc9fb8766a",
+    "url": "/2.fdb99cb1e29d5e80b069.js"
   },
   {
-    "revision": "22b5973e49e76db4f42d",
+    "revision": "2d94ac4887fc9fb8766a",
     "url": "/70a4a7e7b515b0b9c48f.module.wasm"
   },
   {
@@ -128,12 +128,12 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/assets/site.webmanifest"
   },
   {
-    "revision": "1a8c321725f86423736e5b9172201eef",
+    "revision": "29b3f54099c56afb6e4a6759efb37d88",
     "url": "/index.html"
   },
   {
-    "revision": "a93f0061e8dacc3d21c3",
-    "url": "/main.f20b7e133d12799eea6b.js"
+    "revision": "61f2120cc3f1f79628fc",
+    "url": "/main.70c9611318ef793ff69a.js"
   },
   {
     "revision": "cf96bc11f0a11bbf4b6bda0f88289b6e",
